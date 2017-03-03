@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vue.js Tutorial | API Example</title>
+    <title>Vue.js Project | Post API </title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -21,12 +21,22 @@
               <hr />
               <div class="row">
                 <div class="col-md-6">
-                  <input type="text" class="form-control" placeholder="Starting Zip">
-                  <span class="city-span"></span>
+                  <input type="text" class="form-control" placeholder="Starting Zip" v-model="startingZip">
+                  <!-- <span class="city-span">{{startingCity}}</span> -->
+                  <ul>
+                      <li style="list-style-type:none" v-for="startCity in startingCity">
+                        <span class="city-span">{{startCity}}</span>
+                      </li>
+                  </ul>
                 </div>
                 <div class="col-md-6">
-                  <input type="text" class="form-control" placeholder="Ending Zip">
-                  <span class="city-span"></span>
+                  <input type="text" class="form-control" placeholder="Ending Zip" v-model="endingZip">
+                  <!-- <span class="city-span">{{endingCity}}</span> -->
+                  <ul>
+                      <li style="list-style-type:none" v-for="endCity in endingCity">
+                        <span class="city-span">{{endCity}}</span>
+                      </li>
+                  </ul>
                 </div>
               </div>
               <div class="row">
@@ -47,7 +57,83 @@
 
   <script>
     var app = new Vue({
-      el: '#app'
+      el: '#app',
+      data: {
+        startingZip: '',
+        startingCity: [],
+        endingZip: '',
+        endingCity: '',
+        suburbsStart: [],
+        suburbsEnd: [],
+      },
+      watch: {
+        startingZip: function() {
+          this.startingCity = ''
+          if (this.startingZip.length == 4) {
+            this.lookupStartingZip()
+          }
+        },
+        endingZip: function() {
+          this.endingCity = ''
+          if (this.endingZip.length == 4) {
+            this.lookupEndingZip()
+          }
+        },
+      },
+      methods: {
+        lookupStartingZip: _.debounce(function() {
+          var app = this
+          app.startingCity = "Searching..."
+          axios.get('http://v0.postcodeapi.com.au/suburbs/' + app.startingZip + '.json',{
+                headers: {
+                    // 'Access-Control-Allow-Origin': '*',
+                    // 'Access-Control-Allow-Credentials': 'true',
+                    // 'ccess-Control-Request-Method': 'GET, POST, OPTIONS, PUT, PATCH, DELETE',
+                    // 'Access-Control-Allow-Headers': 'X-Requested-With',
+                    // 'Content-Type': 'application/json',
+                    // 'Authorization': 'Negotiate',
+                    // 'Access-Control-Allow-Headers':'X-Requested-With,content-type'
+                }})
+               .then(function (response) {
+                 //app.startingCity = response.data[0].name
+                 for(i = 0; i < response.data.length; i++){
+                   app.suburbsStart[i] = response.data[i].name + ', ' + response.data[i].state.abbreviation
+                   app.startingCity = app.suburbsStart
+                 }
+                 console.log(app.suburbs)
+               })
+               .catch(function (error) {
+                 app.startingCity = "Invalid Zip Code"
+               })
+        }, 500),
+        lookupEndingZip: _.debounce(function() {
+          var app = this
+          app.endingCity = "Searching..."
+          axios.get('http://v0.postcodeapi.com.au/suburbs/' + app.endingZip + '.json',{
+                headers: {
+                    // 'Access-Control-Allow-Origin': '*',
+                    // 'Access-Control-Allow-Credentials': 'true',
+                    // 'ccess-Control-Request-Method': 'GET, POST, OPTIONS, PUT, PATCH, DELETE',
+                    // 'Access-Control-Allow-Headers': 'X-Requested-With',
+                    // 'Content-Type': 'application/json',
+                    // 'Authorization': 'Negotiate',
+                    // 'Access-Control-Allow-Headers':'X-Requested-With,content-type'
+                }})
+               .then(function (response) {
+                 //app.startingCity = response.data[0].name
+                 for(i = 0; i < response.data.length; i++){
+                   app.suburbsEnd[i] = response.data[i].name + ', ' + response.data[i].state.abbreviation
+                   app.endingCity = app.suburbsEnd
+                 }
+                 console.log(app.suburbs)
+               })
+               .catch(function (error) {
+                 app.endingCity = "Invalid Zip Code"
+               })
+        }, 500)
+      }
     })
   </script>
 </html>
+
+<!-- d4fbc6cf-0534-49d0-8cfd-a7680a094d43 -->
